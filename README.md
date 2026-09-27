@@ -6,14 +6,14 @@ ANSI C, builds with Open Watcom C, and runs as the 16-bit real-mode executable
 
 The current release is **Vocabula 0.1.
 
-Why Vocabula?
+# Why Vocabula (DOS)?
 
 Vocabulary training was one of the key educational uses of home computers in
 the DOS era. Many vocabulary trainers were distributed as public-domain or
 shareware programs, alongside a number of commercial programs.
 
 I tried several of these programs at the time, but was never entirely happy
-with them. The programs I knew tended either to be too buggy, too complicated, or
+with them. The programs I knew tended either to be quite buggy, too complicated, or
 missing functionality that matters during real practice. Some stored lessons
 in cumbersome file formats, making it unnecessarily difficult to
 add new words. Others did not distinguish a typo or spelling 
@@ -21,12 +21,13 @@ mistake from an incorrect translation.
 
 Vocabula is designed to be simple and straightforward.
 
-It is a single small executable VC.exe, plus the lession/vocabulary files (.VOC) which have a simple text format.  
+It consists of a single, 50k small executable VC.exe, plus lession/vocabulary files (.VOC) which are in a simple text format.  
 
-VC then searches and lists the vocabulary lesion files, which are text files with the ending .VOC. 
-Some example files are provided.
+Currently, the project folder contains some example .voc lession files for training German-English, and a lrger set of lessions for training Italian-German. Both were convertet from 1990ies DOS vocable trainers Pauker and PC Vokabel, respectively, which inspired this project.   
 
-What does Vocabula?
+Upon start, VC lists the vocabulary .voc lession files which are located in its folder or the VOC subfolder, and lets you choose which one to practice.
+
+# What does Vocabula?
 
 Vocabula is a simple but fully featured and effective vocabulary trainer.
 
@@ -51,7 +52,7 @@ with a keyboard.
 ## lesson (.VOC) files
 
 Lessons are plain-text files with the extension `.VOC`. No lesson editor,
-database, conversion utility, or proprietary file format is required. They are either stored in the program root directory, or a subfolder 'VOC'. 
+no database, conversion utility, or proprietary file format is required. They are either stored in the program root directory, or a subfolder 'VOC'. 
 The program asks the trainee if it wants move the the training files to be subfolder.  
 
 
@@ -158,12 +159,9 @@ Deleting the statistics files resets the corresponding history. The `.VOC`
 lesson is changed only when the student explicitly confirms a new synonym.
 
 
-
-
 ## Running
 
-Place `VC.EXE` in its own directory and start it from DOS, FreeDOS, DOSBox, or
-DOSBox-X:
+Place `VC.EXE` in its own directory and start it from a DOS environment. Vocabula is designed to work down to the oldest of DOS computers, such as the PC 5150 from IBM or the PC1000 series from Amstrad.
 
 ```text
 VC
