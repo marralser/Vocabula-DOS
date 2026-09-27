@@ -1,4 +1,4 @@
-Vocabula (DOS)
+## Vocabula (DOS)
 
 Vocabula is a small, friendly vocabulary trainer for DOS. It is written in
 ANSI C, builds with Open Watcom C, and runs as the 16-bit real-mode executable
