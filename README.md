@@ -17,11 +17,11 @@ with them. The programs I knew tended either to be quite buggy, too complicated,
 missing functionality that matters during real practice. Some stored lessons
 in cumbersome file formats, making it unnecessarily difficult to
 add new words. Others did not distinguish a typo or spelling 
-mistake from an incorrect translation.
+mistake from an incorrect translation. I tried to learn from the things that annoyed me, and write a better vocabulary trainer.
 
-Vocabula is designed to be simple and straightforward.
+Vocabula is designed to make vocaubulary training straightforward fun.
 
-It consists of a single, 50k small executable VC.exe, plus lession/vocabulary files (.VOC) which are in a simple text format.  
+It consists of a single, ~50k small executable VC.exe, plus lession/vocabulary files (.VOC) which are in a simple text format.  
 
 Currently, the project folder contains some example .voc lession files for training German-English, and a lrger set of lessions for training Italian-German. Both were convertet from 1990ies DOS vocable trainers Pauker and PC Vokabel, respectively, which inspired this project.   
 
