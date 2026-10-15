@@ -4,7 +4,8 @@ Vocabula is a small, friendly vocabulary trainer for DOS. It is written in
 ANSI C, builds with Open Watcom C, and runs as the 16-bit real-mode executable
 `VC.EXE`.
 
-The current release is **Vocabula 0.1.
+The current release is **Vocabula 0.1. There is also a sister release, Vocabula for GEM
+https://github.com/marralser/vocabula-GEM
 
 # Why Vocabula (DOS)?
 
