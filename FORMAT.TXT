@@ -1,0 +1,55 @@
+VOCABULA 0.1 TEXT FILE FORMATS
+============================
+
+LESSON.VOC
+----------
+Line 1:  language-name : language-name
+Line 2+: synonym, synonym/synonym : synonym, synonym/synonym
+
+Commas and forward slashes both separate synonyms. Leading and trailing
+whitespace around fields is ignored. A backslash quotes the next byte, so use
+\,, \/, \:, and \\ for literal punctuation. Blank lines and # comment lines are
+ignored. Lines are limited to 1023 bytes; individual entries are limited to
+79 bytes.
+
+Example:
+
+English : German
+watching, looking : sehen, schauen
+house/home : Haus/Zuhause
+colon\: word : Doppelpunktwort
+
+During answer checking, spaces and periods are ignored. Thus "New York",
+"NewYork", and "New... York." compare as the same answer.
+
+Leading articles and infinitive markers may be present or omitted:
+
+the, to, der, die, das, le, la, les, l', il, lo, i, gli, el, los, las
+
+A difference between the straight apostrophe, backtick, and DOS CP850 acute
+accent is counted correct, but Vocabula shows the form stored in the lesson.
+
+LESSON.SUM
+----------
+Append-only session summaries:
+
+2026-09-15 12:30 asked=20 right=17 wrong=3 hints=2 score=26 name=Nora
+
+Older summary lines without a name remain valid and appear as "Student".
+
+LESSON.CAR
+----------
+Append-only card events. Card numbers refer to physical lesson order, starting
+at one. This lets external tools calculate totals without Pauker rewriting an
+existing file:
+
+2026-09-15 12:30 card=7 result=right
+
+LESSON.ERR
+----------
+Append-only wrong-answer details:
+
+2026-09-15 12:30 card=7 question=[watching] answer=[zusehen] expected=[sehen, schauen]
+
+Text inside square brackets is informational in version 0.2. Consumers should
+use the timestamp and card number as the stable fields.

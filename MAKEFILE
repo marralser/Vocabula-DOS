@@ -1,0 +1,35 @@
+CC = wcc
+CFLAGS = -bt=dos -ml -0 -os -w4
+LFLAGS = system dos option quiet option stack=16384
+OBJS = vc.obj lesson.obj stats.obj ui.obj
+
+vc.exe: vc.obj lesson.obj stats.obj ui.obj
+	wlink $(LFLAGS) name vc.exe file vc.obj,lesson.obj,stats.obj,ui.obj
+
+vc.obj: vc.c lesson.h stats.h ui.h
+	$(CC) $(CFLAGS) -fo=vc.obj vc.c
+
+lesson.obj: lesson.c lesson.h
+	$(CC) $(CFLAGS) -fo=lesson.obj lesson.c
+
+stats.obj: stats.c stats.h lesson.h
+	$(CC) $(CFLAGS) -fo=stats.obj stats.c
+
+ui.obj: ui.c ui.h
+	$(CC) $(CFLAGS) -fo=ui.obj ui.c
+
+debug: .SYMBOLIC
+	$(CC) -bt=dos -ml -0 -d2 -od -w4 -fo=vc.obj vc.c
+	$(CC) -bt=dos -ml -0 -d2 -od -w4 -fo=lesson.obj lesson.c
+	$(CC) -bt=dos -ml -0 -d2 -od -w4 -fo=stats.obj stats.c
+	$(CC) -bt=dos -ml -0 -d2 -od -w4 -fo=ui.obj ui.c
+	wlink system dos debug all option stack=16384 name vc.exe file vc.obj,lesson.obj,stats.obj,ui.obj
+
+hosttest:
+	gcc -std=c89 -Wall -Wextra -pedantic -D_POSIX_C_SOURCE=200809L -o test test.c lesson.c
+	./test DEMO.VOC
+
+clean: .SYMBOLIC
+	del *.obj
+	del vc.exe
+	del test
