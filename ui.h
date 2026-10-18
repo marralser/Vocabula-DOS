@@ -16,6 +16,8 @@
 #define UI_INPUT_F1      2
 #define UI_INPUT_F2      3
 #define UI_INPUT_F3      4
+#define UI_INPUT_F4      5
+#define UI_INPUT_F5      6
 
 void ui_init(void);
 void ui_done(void);

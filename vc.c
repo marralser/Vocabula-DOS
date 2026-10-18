@@ -19,6 +19,23 @@
 #define PROGRAM_VERSION "0.1"
 #define LESSON_DIRECTORY "VOC"
 static char student_name[21] = "Student";
+static int sound_enabled = 1;
+static int case_sensitive = 0;
+
+static void sound_correct(void) { if (sound_enabled) ui_sound_correct(); }
+static void sound_minor_error(void) { if (sound_enabled) ui_sound_minor_error(); }
+static void sound_wrong(void) { if (sound_enabled) ui_sound_wrong(); }
+
+static int handle_setting_key(int input_result)
+{
+    char line[80];
+    if (input_result == UI_INPUT_F4) sound_enabled = !sound_enabled;
+    else if (input_result == UI_INPUT_F5) case_sensitive = !case_sensitive;
+    else return 0;
+    sprintf(line, "%s is now %s.", input_result == UI_INPUT_F4 ? "Sound" : "Case-sensitive checking",
+            (input_result == UI_INPUT_F4 ? sound_enabled : case_sensitive) ? "ON" : "OFF");
+    ui_write(6, 19, UI_INFO, line); ui_pause(); return 1;
+}
 
 static int make_lesson_directory(void)
 {
@@ -302,7 +319,9 @@ static void training_screen(const Lesson *lesson, const Side *question, unsigned
     side_text(question, line, sizeof(line)); ui_center(7, UI_FIELD, line);
     ui_box(3, 12, 78, 15, UI_NORMAL, direction ? lesson->left_name : lesson->right_name);
     ui_box(3, 17, 78, 21, UI_NORMAL, "Message");
-    ui_write(3, 24, UI_TITLE, "Enter Answer   F1 Hint   F2 Reveal   Esc End session");
+    sprintf(line, "F1 Hint F2 Reveal F3 Synonym F4 Sound:%s F5 Case:%s Esc End",
+            sound_enabled ? "On" : "Off", case_sensitive ? "On" : "Off");
+    ui_center(24, UI_TITLE, line);
     done = stats->asked > lesson->count ? lesson->count : stats->asked;
     percent = lesson->count ? done * 100U / lesson->count : 0;
     filled = percent * 30U / 100U;
@@ -318,18 +337,21 @@ static int yes_no(int x, int y)
     return result > 0 && tolower((unsigned char)answer[0]) == 'y';
 }
 
-static int confirm_synonym(const Side *question, const char *translation)
+static int confirm_synonym(const Side *question, const Side *expected,
+                           const char *translation)
 {
-    char line[66], greeting[66];
-    ui_clear(UI_NORMAL); ui_box(5, 4, 76, 21, UI_NORMAL, "Confirm new synonym");
-    sprintf(greeting, "%s, are you sure that", student_name); ui_center(7, UI_QUESTION, greeting);
+    char line[66], stored[66];
+    ui_clear(UI_NORMAL); ui_box(5, 3, 76, 22, UI_NORMAL, "Confirm new synonym");
+    ui_center(5, UI_NORMAL, "The vocabulary file suggests:");
     strncpy(line, question->text[0], sizeof(line) - 1); line[sizeof(line) - 1] = '\0';
-    ui_center(9, UI_FIELD, line);
-    ui_center(11, UI_NORMAL, "translates to");
+    ui_center(7, UI_FIELD, line);
+    ui_center(9, UI_NORMAL, "is translated with");
+    side_text(expected, stored, sizeof(stored)); ui_center(11, UI_FIELD, stored);
+    ui_center(13, UI_NORMAL, "You entered this alternative:");
     strncpy(line, translation, sizeof(line) - 1); line[sizeof(line) - 1] = '\0';
-    ui_center(13, UI_FIELD, line);
-    ui_center(16, UI_QUESTION, "If yes I save it. (y/N)");
-    return yes_no(55, 16);
+    ui_center(15, UI_FIELD, line);
+    ui_center(18, UI_QUESTION, "Save it as a synonym and count it correct? (y/N)");
+    return yes_no(66, 18);
 }
 
 static int save_synonym(Lesson *lesson, const char *lesson_name,
@@ -338,7 +360,7 @@ static int save_synonym(Lesson *lesson, const char *lesson_name,
 {
     if (!*translation || strlen(translation) >= MAX_TEXT ||
         expected->count >= MAX_SYNONYMS) return 0;
-    if (!confirm_synonym(question, translation)) return 0;
+    if (!confirm_synonym(question, expected, translation)) return 0;
     strcpy(expected->text[expected->count], translation); ++expected->count;
     if (lesson_save(lesson_name, lesson, error, error_size)) return 1;
     --expected->count;
@@ -455,13 +477,14 @@ static int ask_card(Lesson *lesson, const char *lesson_name, unsigned number, in
         input_result = ui_readline(14, 13, 61, input, sizeof(input));
         if (input_result <= 0) return -1;
         if ((unsigned char)input[0] == 27) return -1;
+        if (handle_setting_key(input_result)) continue;
         if (input_result == UI_INPUT_F1 || !strcmp(input, "?")) {
             ++hints; ++stats->hints; --stats->score; show_hint(expected, hints, message, sizeof(message));
             ui_write(6, 19, UI_INFO, message); ui_pause(); continue;
         }
         if (input_result == UI_INPUT_F2 || !strcmp(input, "!")) {
-            revealed = 1; may_add = 0;
-            ui_sound_wrong();
+            revealed = 1;
+            sound_wrong();
             side_text(expected, message, sizeof(message));
             ui_write(6, 18, UI_WARN, "Let's learn this one together. The answer is:");
             ui_write(6, 19, UI_WARN, message);
@@ -469,37 +492,25 @@ static int ask_card(Lesson *lesson, const char *lesson_name, unsigned number, in
             strcpy(last_wrong, "[revealed]"); continue;
         }
         answer_assess(input, expected, &assessment);
+        if (case_sensitive && assessment.kind == ANSWER_CAPITALIZATION)
+            assessment.kind = ANSWER_SPELLING;
         if (assessment.kind == ANSWER_SPELLING) {
-            ui_sound_minor_error();
+            sound_minor_error();
             sprintf(message, "%s, nearly right! Correct spelling: %s", student_name, expected->text[assessment.match]);
             ui_write(6, 18, UI_WARN, message);
-            ui_write(6, 19, UI_WARN, "Please retype it, or press F3 if your answer was correct.");
-            input_result = ui_readline(76, 20, 1, choice, sizeof(choice));
-            if (input_result == UI_INPUT_F3 && may_add) {
-                save_result = save_synonym(lesson, lesson_name, question, expected,
-                                           input, save_error, sizeof(save_error));
-                if (save_result > 0) {
-                    ++stats->asked; ++stats->right; stats->score += hints ? 1 : 2;
-                    sprintf(message, "%s, thank you! I saved it and counted it correct.", student_name);
-                    ui_write(6, 19, UI_GOOD, message); ui_pause();
-                    stats_record_card(car_name, number, 1); return 1;
-                }
-                if (save_result < 0) {
-                    strcpy(message, "Could not save synonym: ");
-                    strncat(message, save_error, sizeof(message) - strlen(message) - 1);
-                    ui_write(6, 19, UI_WARN, message); ui_pause();
-                }
-            }
+            ui_write(6, 19, UI_WARN, "Please retype the correctly spelled answer.");
+            ui_pause();
             continue;
         }
         if (assessment.kind == ANSWER_WRONG) {
-            ui_sound_wrong();
+            sound_wrong();
             ++factual_tries;
             strncpy(last_wrong, input, sizeof(last_wrong) - 1); last_wrong[sizeof(last_wrong) - 1] = '\0';
             if (factual_tries < 3) {
                 ui_write(6, 18, UI_ERROR, "Oh no, this was wrong. Let's try again?");
                 ui_write(6, 19, UI_NORMAL, "If you think it's right after all, press F3. Enter retries.");
                 input_result = ui_readline(76, 20, 1, choice, sizeof(choice));
+                if (handle_setting_key(input_result)) continue;
                 if (input_result == UI_INPUT_F3 && may_add) {
                     save_result = save_synonym(lesson, lesson_name, question, expected,
                                                input, save_error, sizeof(save_error));
@@ -521,8 +532,8 @@ static int ask_card(Lesson *lesson, const char *lesson_name, unsigned number, in
             }
             continue;
         }
-        if (assessment.kind == ANSWER_TYPO) ui_sound_minor_error();
-        else ui_sound_correct();
+        if (assessment.kind == ANSWER_TYPO) sound_minor_error();
+        else sound_correct();
         if (factual_tries || revealed) {
             ++stats->asked; ++stats->wrong; stats->score -= 2;
             sprintf(message, "%s, that's correct now! We'll practice it once more.", student_name);

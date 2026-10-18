@@ -110,6 +110,8 @@ int ui_readline(int x, int y, int width, char *buffer, unsigned size)
             if ((ascii == 0 || ascii == 0xe0) && scan == 59) { buffer[0] = '\0'; return UI_INPUT_F1; }
             if ((ascii == 0 || ascii == 0xe0) && scan == 60) { buffer[0] = '\0'; return UI_INPUT_F2; }
             if ((ascii == 0 || ascii == 0xe0) && scan == 61) { buffer[0] = '\0'; return UI_INPUT_F3; }
+            if ((ascii == 0 || ascii == 0xe0) && scan == 62) { buffer[0] = '\0'; return UI_INPUT_F4; }
+            if ((ascii == 0 || ascii == 0xe0) && scan == 63) { buffer[0] = '\0'; return UI_INPUT_F5; }
             if (ascii == 27) { buffer[0] = '\0'; return UI_INPUT_CANCEL; }
             if (ascii == 13) { buffer[used] = '\0'; return UI_INPUT_ENTER; }
             if (ascii == 8 && used) {
